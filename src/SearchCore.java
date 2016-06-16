@@ -92,6 +92,7 @@ public class SearchCore {
             jsonArray.put(temp);
         }
         json.put("result", jsonArray);
+        json.put("sum", hits.length);
         return json;
     }
 
