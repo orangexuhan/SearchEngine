@@ -24,6 +24,9 @@ public class SearchCore {
     private IndexSearcher searcher;
     private Analyzer analyzer;
     private float avgLength = 1.0f;
+    private TopDocs results = null;
+
+    private String temporalQuery = null;
 
     public SearchCore(String indexdir) {
         analyzer = new IKAnalyzer();
@@ -49,18 +52,39 @@ public class SearchCore {
         return null;
     }
 
-    public JSONObject returnQuery(String query) {
+    public JSONObject returnNewQuery(String query, int queryNum) {
         JSONObject json = new JSONObject();
         JSONObject temp = new JSONObject();
         JSONArray jsonArray = new JSONArray();
+        temporalQuery = query;
+
         String[] field = new String[2];
         field[0] = "title";
         field[1] = "content";
         SearchCore search = new SearchCore("forIndex/index");
 
-        TopDocs results = search.searchQuery(query, field, 10000);
+        results = search.searchQuery(query, field, 10000);
         ScoreDoc[] hits = results.scoreDocs;
-        for (int i = 0; i < hits.length; i++) {
+        for (int i = 0; i < Math.min(hits.length, queryNum); i++) {
+            Document document = search.getDoc(hits[i].doc);
+            temp.put("ID", document.get("ID"));
+            temp.put("title", document.get("title"));
+            temp.put("content", document.get("content"));
+            jsonArray.put(temp);
+        }
+        json.put("result", jsonArray);
+        json.put("sum", hits.length);
+        return json;
+    }
+
+    public JSONObject returnOldQuery(int lowerBound, int upperBound) {
+        ScoreDoc[] hits = results.scoreDocs;
+        JSONObject json = new JSONObject();
+        JSONObject temp = new JSONObject();
+        JSONArray jsonArray = new JSONArray();
+        SearchCore search = new SearchCore(temporalQuery);
+
+        for (int i = Math.min(hits.length, lowerBound); i < Math.min(hits.length, upperBound); i++) {
             Document document = search.getDoc(hits[i].doc);
             temp.put("ID", document.get("ID"));
             temp.put("title", document.get("title"));
@@ -105,8 +129,8 @@ public class SearchCore {
         String[] field = new String[2];
         field[0] = "title";
         field[1] = "content";
-        TopDocs results = search.searchQuery("史宗恺", field, 10000);
-        ScoreDoc[] hits = results.scoreDocs;
+        TopDocs result = search.searchQuery("史宗恺", field, 10000);
+        ScoreDoc[] hits = result.scoreDocs;
         for (int i = 0; i < hits.length; i++) { // output raw format
             Document doc = search.getDoc(hits[i].doc);
             System.out.println("doc=" + hits[i].doc + " score=" + hits[i].score + " ID= " + doc.get("ID"));
