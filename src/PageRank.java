@@ -22,7 +22,7 @@ public class PageRank {
     }
 
     public void CalPR() throws IOException {
-        String fileName = "pageRank/node.txt";
+        String fileName = "pageRank/list.txt";
         BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(new File(fileName)), "UTF-8"));
         HashMap<Long, String> name = new HashMap<Long, String>();
         HashMap<Long, Integer> outDegree = new HashMap<Long, Integer>();
@@ -32,12 +32,12 @@ public class PageRank {
         {
             String attribute = reader.readLine();
             if (attribute == null) break;
-            String[] name_number = attribute.split("-->");
+            String[] name_number = attribute.split("==>");
             int length = name_number.length;
             System.out.println((long) total + "+++++");
-            name.put(Long.parseLong(name_number[length - 1]), name_number[0]);
-            outDegree.put(Long.parseLong(name_number[length - 1]), total);
-            compare.put((long) total, Long.parseLong(name_number[length - 1]));
+            name.put(Long.parseLong(name_number[0]), name_number[length - 1]);
+            outDegree.put(Long.parseLong(name_number[0]), total);
+            compare.put((long) total, Long.parseLong(name_number[0]));
             total++;
         }
         reader.close();
@@ -55,26 +55,15 @@ public class PageRank {
             inD[i] = 0;
         }
 
-        String fileD = "pageRank/map.txt";
+        String fileD = "pageRank/links_new.txt";
         BufferedReader readerD = new BufferedReader(new InputStreamReader(new FileInputStream(new File(fileD)), "UTF-8"));
         while (true)
         {
             String line = readerD.readLine();
             if (line == null) break;
-            String[] source = line.split(":");
-            String[] destination = source[1].split(",");
-            if (source[1].equals(""))
-            {
-                outD[outDegree.get(Long.parseLong(source[0]))] += 0;
-            }
-            else
-            {
-                outD[outDegree.get(Long.parseLong(source[0]))] += destination.length;
-                for (int i = 0; i < destination.length; i++)
-                {
-                    inD[outDegree.get(Long.parseLong(destination[i]))] += 1;
-                }
-            }
+            String[] source = line.split("==>");
+            outD[outDegree.get(Long.parseLong(source[0]))] += 1;
+            inD[outDegree.get(Long.parseLong(source[1]))] += 1;
         }
         readerD.close();
         for (int i = 0; i < total; i++)
@@ -96,19 +85,10 @@ public class PageRank {
             {
                 String line = readerD.readLine();
                 if (line == null) break;
-                String[] source = line.split(":");
-                if (source[1].equals(""))
-                    continue;
-                String[] destination = source[1].split(",");
-                if (!destination[0].equals(""))
-                {
-                    for (int j = 0; j < destination.length; j++)
-                    {
-                        I[outDegree.get(Long.parseLong(destination[j]))] += (1.0 - alpha)
-                                * pageRank[outDegree.get(Long.parseLong(source[0]))]
-                                / outD[outDegree.get(Long.parseLong(source[0]))];
-                    }
-                }
+                String[] source = line.split("==>");
+                I[outDegree.get(Long.parseLong(source[1]))] += (1.0 - alpha)
+                        * pageRank[outDegree.get(Long.parseLong(source[0]))]
+                        / outD[outDegree.get(Long.parseLong(source[0]))];
             }
             readerD.close();
             for (int n = 0; n < total; n++)
@@ -128,9 +108,13 @@ public class PageRank {
         
         BufferedWriter writer = new BufferedWriter(
                 new OutputStreamWriter(new FileOutputStream(new File("forIndex/pageRank.txt"))));
+        double sum = 0;
         for (int i = 0; i < total; i++) {
-            writer.write(name.get(compare.get((long) i)) + "-->" + pageRank[i] + "\r\n");
+            writer.write(
+                    compare.get((long) i) + "==>" + name.get(compare.get((long) i)) + "==>" + pageRank[i] + "\r\n");
+            sum += pageRank[i];
         }
+        System.out.println("sum = " + sum);
         writer.close();
 
 //        StreamWriter writer = new StreamWriter("result.txt");

@@ -153,7 +153,7 @@ public class SearchCore {
         String[] field = new String[2];
         field[0] = "title";
         field[1] = "content";
-        TopDocs result = search.searchQuery("史宗恺", field, 10000);
+        TopDocs result = search.searchQuery("计算机系", field, 10000);
         ScoreDoc[] hits = result.scoreDocs;
         for (int i = 0; i < hits.length; i++) { // output raw format
             Document doc = search.getDoc(hits[i].doc);

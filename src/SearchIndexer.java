@@ -21,6 +21,7 @@ public class SearchIndexer {
     private IndexWriter indexWriter;
     private float averageLength = 1.0f;
     HashMap<String, Double> pageRank = new HashMap<String, Double>();
+    HashMap<String, String> name = new HashMap<String, String>();
 
     public SearchIndexer(String indexDir) {
         analyzer = new IKAnalyzer();
@@ -38,8 +39,9 @@ public class SearchIndexer {
                 new InputStreamReader(new FileInputStream(new File(fileName)), "UTF-8"));
         String line = null;
         while ((line = reader.readLine()) != null) {
-            String[] temp = line.split("-->");
-            pageRank.put(temp[0], Double.parseDouble(temp[1]));
+            String[] temp = line.split("==>");
+            pageRank.put(temp[0], Double.parseDouble(temp[2]));
+            name.put(temp[0], temp[1]);
         }
     }
 
@@ -80,6 +82,7 @@ public class SearchIndexer {
                     contentField.setBoost((float) boost * 0.8f);
                     titleField.setBoost((float) boost * 1.0f);
                 } else {
+                    System.out.println(ID + "-->" + 1.0f);
                     contentField.setBoost(1.0f);
                     titleField.setBoost(1.0f);
                 }
@@ -101,7 +104,7 @@ public class SearchIndexer {
 
     public static void main(String[] args) throws IOException {
         SearchIndexer indexer = new SearchIndexer("forIndex/index");
-        // indexer.ReadPageRank("forIndex/pageRank.txt");
+        indexer.ReadPageRank("forIndex/pageRank.txt");
         indexer.indexSpecialFile("input/list_new_new.txt");
         indexer.saveGlobals("forIndex/global.txt");
     }
