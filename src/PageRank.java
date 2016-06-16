@@ -49,8 +49,8 @@ public class PageRank {
         double S = 0;
         for (int i = 0; i < total; i++)
         {
-            pageRank[i] = 1.0 / total;
-            I[i] = alpha / total;
+            pageRank[i] = 1.0;
+            I[i] = alpha;
             outD[i] = 0;
             inD[i] = 0;
         }
@@ -78,7 +78,7 @@ public class PageRank {
         {
             for (int i = 0; i < total; i++)
             {
-                I[i] = alpha / total;
+                I[i] = alpha;
             }
             readerD = new BufferedReader(new InputStreamReader(new FileInputStream(new File(fileD)), "UTF-8"));
             while (true)
@@ -93,7 +93,7 @@ public class PageRank {
             readerD.close();
             for (int n = 0; n < total; n++)
             {
-                pageRank[n] = I[n] + (1.0 - alpha) * S / total;
+                pageRank[n] = I[n] + (1.0 - alpha) * S;
             }
 
             S = 0;
