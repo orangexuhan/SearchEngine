@@ -68,8 +68,8 @@ public class SearchCore {
         for (int i = 0; i < Math.min(hits.length, queryNum); i++) {
             Document document = search.getDoc(hits[i].doc);
             temp.put("ID", document.get("ID"));
-            temp.put("title", document.get("title"));
-            temp.put("content", document.get("content"));
+            temp.put("title", lengthRestriction(document.get("title"), "title"));
+            temp.put("content", lengthRestriction(document.get("content"), "content"));
             jsonArray.put(temp);
         }
         json.put("result", jsonArray);
@@ -87,13 +87,36 @@ public class SearchCore {
         for (int i = Math.min(hits.length, lowerBound); i < Math.min(hits.length, upperBound); i++) {
             Document document = search.getDoc(hits[i].doc);
             temp.put("ID", document.get("ID"));
-            temp.put("title", document.get("title"));
-            temp.put("content", document.get("content"));
+            temp.put("title", lengthRestriction(document.get("title"), "title"));
+            temp.put("content", lengthRestriction(document.get("content"), "content"));
             jsonArray.put(temp);
         }
         json.put("result", jsonArray);
         json.put("sum", hits.length);
         return json;
+    }
+
+    private String lengthRestriction(String content, String type) {
+        if (type.equals("title")) {
+            if (content.length() > 30) {
+                String res = content.substring(0, 30);
+                res = res + "...";
+                return res;
+            } else {
+                return content;
+            }
+        }
+        else if (type.equals("content")) {
+            if (content.length() > 75) {
+                String res = content.substring(0, 75);
+                res = res + "...";
+                return res;
+            }
+            else {
+                return content;
+            }
+        }
+        return content;
     }
 
     public Document getDoc(int docID) {
