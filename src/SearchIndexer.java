@@ -63,24 +63,35 @@ public class SearchIndexer {
 
                 // TODO: need to negotiate with gzp / field.setboost
                 String temp = null;
+                String title = "";
                 String content = "";
+                String url = "";
                 while ((temp = reader.readLine()) != null) {
-                    content += temp + " ";
+                    String[] all = temp.split("==>");
+                    url = all[0];
+                    title = all[1];
+                    content = all[2];
                 }
                 System.out.println(content);
 
                 Document document = new Document();
                 Field contentField = new Field("content", content, Field.Store.YES, Field.Index.ANALYZED);
+                Field titleField = new Field("title", content, Field.Store.YES, Field.Index.ANALYZED);
+                Field urltField = new Field("url", content, Field.Store.YES, Field.Index.NO);
                 averageLength += content.length();
                 if (pageRank.containsKey(fileList[i].getName())) {
                     double boost = pageRank.get(fileList[i].getName());
                     System.out.println(fileList[i].getName() + "-->" + boost);
                     contentField.setBoost((float) boost * 1.0f);
+                    titleField.setBoost((float) boost * 1.0f);
                 }
                 else{
                     contentField.setBoost(1.0f);
+                    titleField.setBoost(1.0f);
                 }
                 document.add(contentField);
+                document.add(titleField);
+                document.add(urltField);
                 // TODO: document.setboost
                 indexWriter.addDocument(document);
                 if (i % 10000 == 0) {

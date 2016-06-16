@@ -15,6 +15,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.FSDirectory;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class SearchCore {
@@ -47,8 +48,26 @@ public class SearchCore {
         return null;
     }
 
-    public JSONObject returnQuery() {
+    public JSONObject returnQuery(String query) {
+        JSONObject json = new JSONObject();
+        JSONObject temp = new JSONObject();
+        JSONArray jsonArray = new JSONArray();
+        String[] field = new String[2];
+        field[0] = "title";
+        field[1] = "content";
+        SearchCore search = new SearchCore("forIndex/index");
 
+        TopDocs results = search.searchQuery(query, field, 10000);
+        ScoreDoc[] hits = results.scoreDocs;
+        for (int i = 0; i < hits.length; i++) {
+            Document document = search.getDoc(hits[i].doc);
+            temp.put("url", document.get("url"));
+            temp.put("title", document.get("title"));
+            temp.put("content", document.get("content"));
+            jsonArray.put(temp);
+        }
+        json.put("result", jsonArray);
+        return json;
     }
 
     public Document getDoc(int docID) {
