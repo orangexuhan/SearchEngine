@@ -13,6 +13,7 @@ import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.similarities.BM25Similarity;
 import org.apache.lucene.store.FSDirectory;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -29,7 +30,7 @@ public class SearchCore {
         try {
             reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexdir)));
             searcher = new IndexSearcher(reader);
-            // searcher.setSimilarity(new MySimilarity());
+            searcher.setSimilarity(new BM25Similarity());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -61,7 +62,7 @@ public class SearchCore {
         ScoreDoc[] hits = results.scoreDocs;
         for (int i = 0; i < hits.length; i++) {
             Document document = search.getDoc(hits[i].doc);
-            temp.put("url", document.get("url"));
+            temp.put("ID", document.get("ID"));
             temp.put("title", document.get("title"));
             temp.put("content", document.get("content"));
             jsonArray.put(temp);
@@ -104,7 +105,7 @@ public class SearchCore {
         String[] field = new String[2];
         field[0] = "title";
         field[1] = "content";
-        TopDocs results = search.searchQuery("计算机系", field, 10000);
+        TopDocs results = search.searchQuery("史宗恺", field, 10000);
         ScoreDoc[] hits = results.scoreDocs;
         for (int i = 0; i < hits.length; i++) { // output raw format
             Document doc = search.getDoc(hits[i].doc);
