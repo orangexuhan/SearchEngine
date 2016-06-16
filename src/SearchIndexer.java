@@ -8,13 +8,13 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.cn.smart.SmartChineseAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.wltea.analyzer.lucene.IKAnalyzer;
 
 public class SearchIndexer {
     private Analyzer analyzer;
@@ -23,7 +23,7 @@ public class SearchIndexer {
     HashMap<String, Double> pageRank = new HashMap<String, Double>();
 
     public SearchIndexer(String indexDir) {
-        analyzer = new SmartChineseAnalyzer();
+        analyzer = new IKAnalyzer();
         try{
             IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
             Directory dir = FSDirectory.open(Paths.get(indexDir));
@@ -56,36 +56,30 @@ public class SearchIndexer {
     public void indexSpecialFile(String filename) {
         try {
             File file = new File(filename);
-            File[] fileList = file.listFiles();
-            for (int i = 0; i < fileList.length; i++) {
-                BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(new FileInputStream(fileList[i]), "UTF-8"));
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(new FileInputStream(file), "UTF-8"));
 
-                // TODO: need to negotiate with gzp / field.setboost
-                String temp = null;
-                String title = "";
-                String content = "";
-                String url = "";
-                while ((temp = reader.readLine()) != null) {
-                    String[] all = temp.split("==>");
-                    url = all[0];
-                    title = all[1];
-                    content = all[2];
-                }
-                System.out.println(content);
-
+            // TODO: need to negotiate with gzp / field.setboost
+            String temp = null;
+            String title = null;
+            String content = null;
+            String ID = null;
+            while ((temp = reader.readLine()) != null) {
+                String[] all = temp.split("==>");
+                ID = all[0];
+                title = all[1];
+                content = all[2];
                 Document document = new Document();
                 Field contentField = new Field("content", content, Field.Store.YES, Field.Index.ANALYZED);
-                Field titleField = new Field("title", content, Field.Store.YES, Field.Index.ANALYZED);
-                Field urltField = new Field("url", content, Field.Store.YES, Field.Index.NO);
+                Field titleField = new Field("title", title, Field.Store.YES, Field.Index.ANALYZED);
+                Field urltField = new Field("ID", ID, Field.Store.YES, Field.Index.NO);
                 averageLength += content.length();
-                if (pageRank.containsKey(fileList[i].getName())) {
-                    double boost = pageRank.get(fileList[i].getName());
-                    System.out.println(fileList[i].getName() + "-->" + boost);
-                    contentField.setBoost((float) boost * 1.0f);
+                if (pageRank.containsKey(ID)) {
+                    double boost = pageRank.get(ID);
+                    System.out.println(ID + "-->" + boost);
+                    contentField.setBoost((float) boost * 0.8f);
                     titleField.setBoost((float) boost * 1.0f);
-                }
-                else{
+                } else {
                     contentField.setBoost(1.0f);
                     titleField.setBoost(1.0f);
                 }
@@ -94,10 +88,8 @@ public class SearchIndexer {
                 document.add(urltField);
                 // TODO: document.setboost
                 indexWriter.addDocument(document);
-                if (i % 10000 == 0) {
-                    System.out.println("process " + i);
-                }
             }
+
             averageLength /= indexWriter.numDocs();
             System.out.println("average length = " + averageLength);
             System.out.println("total " + indexWriter.numDocs() + " documents");
@@ -109,8 +101,8 @@ public class SearchIndexer {
 
     public static void main(String[] args) throws IOException {
         SearchIndexer indexer = new SearchIndexer("forIndex/index");
-        indexer.ReadPageRank("forIndex/pageRank.txt");
-        indexer.indexSpecialFile("input");
+        // indexer.ReadPageRank("forIndex/pageRank.txt");
+        indexer.indexSpecialFile("input/list_new_new.txt");
         indexer.saveGlobals("forIndex/global.txt");
     }
 }

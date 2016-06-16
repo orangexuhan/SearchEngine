@@ -6,7 +6,6 @@ import java.io.InputStreamReader;
 import java.nio.file.Paths;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.cn.smart.SmartChineseAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
@@ -17,6 +16,7 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.FSDirectory;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.wltea.analyzer.lucene.IKAnalyzer;
 
 public class SearchCore {
     private IndexReader reader;
@@ -25,7 +25,7 @@ public class SearchCore {
     private float avgLength = 1.0f;
 
     public SearchCore(String indexdir) {
-        analyzer = new SmartChineseAnalyzer();
+        analyzer = new IKAnalyzer();
         try {
             reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexdir)));
             searcher = new IndexSearcher(reader);
@@ -101,13 +101,15 @@ public class SearchCore {
         search.loadGlobals("forIndex/global.txt");
         System.out.println("avg length = " + search.getAvg());
 
-        String[] field = new String[1];
-        field[0] = "content";
-        TopDocs results = search.searchQuery("徐王白邈", field, 10);
+        String[] field = new String[2];
+        field[0] = "title";
+        field[1] = "content";
+        TopDocs results = search.searchQuery("计算机系", field, 10000);
         ScoreDoc[] hits = results.scoreDocs;
         for (int i = 0; i < hits.length; i++) { // output raw format
             Document doc = search.getDoc(hits[i].doc);
-            System.out.println("doc=" + hits[i].doc + " score=" + hits[i].score + " content= " + doc.get("content"));
+            System.out.println("doc=" + hits[i].doc + " score=" + hits[i].score + " ID= " + doc.get("ID"));
         }
+        System.out.println("total = " + hits.length);
     }
 }
