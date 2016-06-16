@@ -22,7 +22,7 @@ public class PageRank {
     }
 
     public void CalPR() throws IOException {
-        String fileName = "input/node.txt";
+        String fileName = "pageRank/node.txt";
         BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(new File(fileName)), "UTF-8"));
         HashMap<Long, String> name = new HashMap<Long, String>();
         HashMap<Long, Integer> outDegree = new HashMap<Long, Integer>();
@@ -55,7 +55,7 @@ public class PageRank {
             inD[i] = 0;
         }
 
-        String fileD = "input/map.txt";
+        String fileD = "pageRank/map.txt";
         BufferedReader readerD = new BufferedReader(new InputStreamReader(new FileInputStream(new File(fileD)), "UTF-8"));
         while (true)
         {

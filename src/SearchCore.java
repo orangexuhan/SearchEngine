@@ -15,6 +15,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.FSDirectory;
+import org.json.JSONObject;
 
 public class SearchCore {
     private IndexReader reader;
@@ -44,6 +45,10 @@ public class SearchCore {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public JSONObject returnQuery() {
+
     }
 
     public Document getDoc(int docID) {
